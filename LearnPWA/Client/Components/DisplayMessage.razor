@@ -1,0 +1,15 @@
+﻿@using Models
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-@(messageType == MessageType.success ? "success" : "danger")">
+        @message
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string message { get; set; }
+    [Parameter]
+    public MessageType messageType { get; set; }
+}

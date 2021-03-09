@@ -1,0 +1,105 @@
+﻿@page "/Students"
+
+<h3>Students</h3>
+@inject HttpClient Http
+
+
+<EditForm Model="addmodel" OnSubmit="addStudent">
+    <InputText @bind-Value="addmodel.Name" class="form-control" />
+    <br />
+    <br />
+    <button class="btn btn-primary"> Save </button>
+</EditForm>
+<hr />
+<LearnPWA.Client.Components.DisplayMessage message="@message" messageType="@messageType" />
+@if (students == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in students)
+            {
+                <tr>
+                    <td>@student.Id</td>
+                    <td><input value="@student.Name" class="form-control" @onchange="@((ChangeEventArgs __e) => editStudent(student.Id, __e.Value.ToString()))" /></td>
+                    <td>
+                        <a @onclick="()=>delete(student.Id)" class="btn btn-danger">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Student> students;
+
+    Student addmodel = new Student();
+
+    protected MessageType messageType { get; set; }
+
+    protected string message ;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await loadStudents();
+    }
+
+
+
+    private async Task addStudent()
+    {
+        try
+        {
+            await Http.PostAsJsonAsync("api/Students", addmodel);
+            addmodel = new Student();
+            await loadStudents();
+        }
+        catch
+        {
+
+        }
+    }
+
+    private async Task editStudent(int id, String name)
+    {
+        try
+        {
+            await Http.PutAsJsonAsync($"api/Students/{id}", new Student() { Id = id, Name = name });
+            messageType = MessageType.success;
+            message = "edit success";
+        }
+        catch
+        {
+
+        }
+    }
+
+    private async Task delete(int id)
+    {
+        try
+        {
+            await Http.DeleteAsync($"api/Students/{id}");
+            await loadStudents();
+        }
+        catch
+        {
+
+        }
+    }
+
+    private async Task loadStudents()
+    {
+        students = await Http.GetFromJsonAsync<List<Student>>("api/Students");
+    }
+
+}
